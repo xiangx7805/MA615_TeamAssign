@@ -1,12 +1,12 @@
 ---
 title: "correlaid_text_analysis"
-article: "Xiang XU"
+author: "Xiang XU, Jing(Mira) Tang, Ningze(Summer) ZU, Jianhao(Miller) Yan"
 date: "November 3, 2018"
-output: pdf_document
+output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,dev="pdf",fig.align  = 'center')
+knitr::opts_chunk$set(echo = TRUE)
 pacman::p_load(
   "ggplot2",
   "knitr",
@@ -29,7 +29,7 @@ pacman::p_load(
 
 
 ##Scraping webpages
-```{r}
+```{r, echo=FALSE}
 url1 <- "https://correlaid.org/blog/posts/understand-p-values"
 url2 <- "https://correlaid.org/blog/posts/blockchain-explained"
 url3 <- "https://correlaid.org/blog/posts/music-with-r"
@@ -47,11 +47,11 @@ raw.text <- as.data.frame(rbind(cbind("doc1",doc1),
 colnames(raw.text)  <-  c("article", "text")  
 raw.text$article <- as.character(raw.text$article)
 raw.text$text <- as.character(raw.text$text)
-str(raw.text)
+#str(raw.text)
 ```
 
 ##tidy text
-```{r}
+```{r, echo=FALSE}
 tidy_webtext <- raw.text %>%
   # unnest_tokens(sentence, text, token = "sentences") %>% 
   unnest_tokens(word, text)%>% 
@@ -62,10 +62,10 @@ tidy_webtext <- raw.text %>%
          !word %in% NA)
 ```
 
-#Chapter 1 
+
 ##look at single word frequency and visualize
 ###first at doc1
-```{r}
+```{r, echo=FALSE}
 text1_count <- tidy_webtext %>%
   filter(article == "doc1" )%>%
   count(word, sort = TRUE) 
@@ -80,7 +80,7 @@ text1_count %>%
 ```
 
 ###plotting and comparing the three articles
-```{r,warning=FALSE, message=FALSE}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 frequency <- tidy_webtext %>% 
   count(article, word) %>%
   group_by(article) %>%
@@ -105,7 +105,7 @@ ggplot(frequency, aes(x = proportion, y = `doc1`, color = abs(`doc1` - proportio
   
 ```
 
-```{r}
+```{r, echo=FALSE}
 cor.test(data = frequency[frequency$article == "doc2",],
          ~ proportion + `doc1`)
 
@@ -115,16 +115,16 @@ cor.test(data = frequency[frequency$article == "doc3",],
 
 *As we saw in the plots, the word frequencies have little frequencies in three articles.*
 
-#Chapter 2 Sentiment analysis
+#Sentiment analysis
 
-```{r}
+```{r, echo=FALSE}
 afinn <- get_sentiments("afinn")
 bing <- get_sentiments("bing")
 nrc <- get_sentiments("nrc")
 ```
 
 ###bing sentiment analysis
-```{r}
+```{r, echo=FALSE}
 sentitext <-  raw.text %>%
   unnest_tokens(sentence, text, token = "sentences") %>% 
   group_by(article) %>%
@@ -146,7 +146,7 @@ ggplot(bing_analysis, aes(index, sentiment, fill = article)) +
 
 ##Comparing the three sentiment dictionaries
 
-```{r,warning=FALSE, message=FALSE}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 sentidoc1 <-  sentitext %>%
   filter(article == "doc1") 
 
@@ -177,7 +177,7 @@ bind_rows(afinnsenti,
 
 ##Most common sentiment words
 
-```{r,warning=FALSE, message=FALSE}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 bing_counts <- sentitext %>%
   inner_join(bing) %>%
   count(word, sentiment, sort = TRUE) %>%
@@ -198,10 +198,13 @@ bing_counts %>%
 ```
 
 ##Wordclouds
-```{r,warning=FALSE, message=FALSE}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 sentitext %>%
   count(word) %>%
   with(wordcloud(word, n, max.words = 100))
+```
+
+```{r,warning=FALSE, message=FALSE, fig.width=6, fig.height=6, echo=FALSE}
 
 library(reshape2)
 
@@ -215,7 +218,7 @@ sentitext %>%
 
 #Chapter 3 tf-idf
 
-```{r,warning=FALSE, message=FALSE}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 wordcount <- tidy_webtext %>%
   group_by(article) %>%
   count(article, word) %>%
@@ -228,14 +231,14 @@ tidy.text <- left_join(tidy_webtext %>%
   wordcount)
 ```
 
-```{r,warning=FALSE, message=FALSE}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 ggplot(tidy.text, aes(n/total, fill = article)) +
   geom_histogram(show.legend = FALSE) +
   #xlim(NA, 0.01) +
   facet_wrap(~ article, ncol = 2, scales = "free_y")
 ```
 
-```{r}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 # freq_by_rank <- tidy.text %>% 
 #   group_by(article) %>% 
 #   mutate(rank = row_number(), 
@@ -249,7 +252,7 @@ freq_by_rank <- tidy.text %>%
   mutate(rank = row_number()) 
 ```
 
-```{r}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 rank_subset <- freq_by_rank %>% 
   filter(rank < 100,
          rank > 10)
@@ -258,7 +261,7 @@ rankreg <- lm(log10(`term frequency`) ~ log10(rank), data = rank_subset)
 rankreg$coef
 ```
 
-```{r}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 freq_by_rank %>% 
   ggplot(aes(rank, `term frequency`, color = article)) + 
   geom_abline(intercept = rankreg$coef[1], slope =rankreg$coef[2], color = "gray50", linetype = 2) +
@@ -269,7 +272,7 @@ freq_by_rank %>%
 
 ###tf-idf function
 
-```{r,warning=FALSE, message=FALSE}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 tidytext <- tidy.text %>%
   bind_tf_idf(word, article, n) %>%
   select(-total) %>%
@@ -289,4 +292,87 @@ tidytext %>%
   coord_flip()
 ```
 
+#Chapter 4 n-grams and correlations
+
+We use `unnest_tokens` function to tokenize the articles into consecutive sequences of words, called n-grams. Here we focus on bigrams, aka two consecutive words.
+
+As one might expect, a lot of the most common bigrams are pairs of common (uninteresting) words, such as of the and to be: what we call “stop-words” . This is a useful time to use tidyr’s `separate()` and `unite()`, which splits a column into multiple based on a delimiter and reunite them. In this process we can remove cases where either is a stop-word.
+
+Also, we clean the bigrams by `str_extract()` and `filter()` function to remove cases where either is NA, space or non-letter word.
+
+Then we look at tf_idf of bigrams and visualize them.
+
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
+tidy_bigram <- raw.text %>%
+  # unnest_tokens(sentence, text, token = "sentences") %>% 
+  unnest_tokens(bigram, text, token = "ngrams", n = 2)%>% 
+  
+  separate(bigram, c("word1", "word2", sep = " "))%>%
+  mutate(word1 = str_extract(word1 , "[a-z'\\s]+")) %>%
+  filter(!word1 %in% stop_words$word ,
+         !word1 %in% "[\\s]+",
+         !word1 %in% "",
+         !word1 %in% NA) %>%
+  mutate(word2 = str_extract(word2 , "[a-z'\\s]+")) %>%
+  filter(!word2 %in% stop_words$word,
+         !word2 %in% "[\\s]+",
+         !word2 %in% "",
+         !word2 %in% NA) %>%
+  
+  unite(bigram, word1, word2, sep = " ") %>%
+  count( article,bigram, sort = TRUE) %>%
+  bind_tf_idf( bigram, article,n) %>%
+  arrange(desc(tf_idf))
+
+head(tidy_bigram,10)
+```
+
+```{r, fig.width=14, fig.height=6, echo=FALSE}
+tidy_bigram %>%
+  group_by(article)%>%
+  top_n(15, tf_idf)%>%
+  ungroup()%>%
+  mutate(bigram= reorder(bigram, tf_idf))%>%
+  ggplot( aes(bigram, tf_idf, fill= article)) +
+  geom_col(show.legend = FALSE) +
+  labs(x = NULL, y ="tf-idf") +
+  facet_wrap(~ article, ncol =3, scales = "free") +
+  coord_flip()
+```
+
+Figure: The 12 bigrams with the highest tf-idf
+
+There are advantages and disadvantages to examining the tf-idf of bigrams rather than individual words. Pairs of consecutive words might capture structure that isn’t present when one is just counting single words, and may provide context that makes tokens more understandable . However, the per-bigram counts are also sparser: a typical two-word pair is rarer than either of its component words. Thus, bigrams can be more useful when we have a larger text dataset.
+
+* Using bigrams to provide context in sentiment analysis
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
+
+negation_words <- c("not", "no", "never", "without")
+
+# senti_bigram <- tidy_bigram %>%   
+#   separate(bigram, c("word1", "word2", sep = " ")) %>%
+#   filter(word1 %in% afinn$word ) %>%
+#   inner_join(afinn, by = c(word2 = "word")) %>%
+#   count(word1,word2, score, sort = TRUE) %>%
+#   ungroup()
+# 
+# head(negsenti_bigram)
+
+negsenti_bigram <- tidy_bigram %>%   
+  separate(bigram, c("word1", "word2", sep = " ")) %>%
+  filter(word1 %in% negation_words) %>%
+  inner_join(afinn, by = c(word2 = "word")) %>%
+  count(word1,word2, score, sort = TRUE) %>%
+  ungroup()
+
+head(negsenti_bigram)
+```
+
+For these are three academic articles and there are not many bigrams with negative terms. So we can skip this part.
+
+* Visualizing a network of bigrams with ggraph
+
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
+
+```
 
