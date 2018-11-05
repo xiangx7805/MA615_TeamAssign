@@ -1,0 +1,175 @@
+---
+title: "foodcourt_2018mapping"
+author: "Team: Ningze Zu, Mira Tang, Xiang Xu "
+date: "11/3/2018"
+output:
+html_document:
+  df_print: paged
+pdf_document:
+  df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+pacman::p_load("leaflet", "sp", "magrittr", "maps", "htmltools", "rgdal", "ggplot2", "maptools", "XML", "readr", "rgeos", "rmapshaper", "tidyverse", "lubridate", "ggmap", "ggrepel","RCurl", update = FALSE) 
+```
+
+```{r, warning = FALSE}
+# Import data
+mayorsfoodcourt <- read.csv("https://data.boston.gov/dataset/03693648-2c62-4a2c-a4ec-48de2ee14e18/resource/4582bec6-2b4f-4f9e-bc55-cbaa73117f4c/download/mayorsfoodcourt.csv", header=T)
+
+# Data Cleaning
+# filter food courts whose licsense status is active
+mayorsfoodcourt %>%
+  filter(LICSTATUS == "Active") %>%
+  dplyr::select(businessName, LICSTATUS, ViolLevel, VIOLDTTM, Address, CITY, ZIP, Location) %>%
+  separate(Location, c("lat", "long"), ",") -> foodcourt
+
+# filter food courts whose licsense status is active and VIOLDTTM in 2018.
+foodcourt_2018 <- mayorsfoodcourt %>%
+  filter(str_detect(VIOLDTTM, "2018")) %>%
+  filter(LICSTATUS == "Active") %>%
+  separate(Location, c("lat", "long"), ",") %>%
+filter(!is.na(long) & !is.na(lat))
+
+# covert location into latitude and longtitude.
+foodcourt$lat <- as.numeric(gsub("\\(", "", foodcourt$lat))
+foodcourt$long <- as.numeric(gsub(")", "", foodcourt$long))
+foodcourt_2018$lat <- as.numeric(gsub("\\(", "", foodcourt_2018$lat))
+foodcourt_2018$long <- as.numeric(gsub(")", "", foodcourt_2018$long))
+
+# create new variables indicate the violation times of each food court
+count <- aggregate(data.frame(count = foodcourt_2018$businessName), list(value = foodcourt_2018$businessName), length)
+foodcourt_2018 <- foodcourt_2018[!duplicated(foodcourt_2018$businessName), ]
+foodcourt_2018 <- cbind(foodcourt_2018, count)
+foodcourt %>% group_by(businessName, Address) %>% count() %>% arrange(desc(n)) -> food
+colnames(food)[3] <- "VioCount"
+foodcourt %>% dplyr::select(businessName, LICSTATUS, Address, CITY, ZIP, lat, long) -> location
+location <- unique(location)
+
+# how many NAs
+sum(is.na(location$lat))
+as.numeric(sum(is.na(location$lat)) / count(unique(location))) # location
+
+# create a dataset with count of violation times and the geographic info of foodcourts
+food$ID <- paste(food$businessName, food$Address)
+location$ID <- paste(location$businessName, location$Address)
+food <- left_join(food, location, by = "ID")
+food$businessName.y <- NULL
+food$Address.y <- NULL
+food$ID <- NULL
+food$LICSTATUS <- NULL
+colnames(food)[1] <- "businessName"
+colnames(food)[2] <- "Address"
+food <- na.omit(food)
+```
+
+## Top 50 Food Courts in MA with the Most Violations
+
+```{r, warning = FALSE}
+food.50 <- food[1:50,]
+content <- paste(sep = "<br/>",
+                 food.50$businessName,
+                 food.50$Address,
+                 food.50$CITY
+)
+
+Icon <- makeIcon(
+  iconUrl = "https://image.flaticon.com/icons/svg/138/138310.svg",
+  iconWidth = 15, iconHeight = 15,
+  iconAnchorX = 22, iconAnchorY = 94,
+  shadowUrl = "https://image.flaticon.com/icons/svg/138/138310.svg",
+  shadowWidth = 15, shadowHeight = 15,
+  shadowAnchorX = 4, shadowAnchorY = 62
+)
+
+leaflet(data = food.50) %>%
+addTiles() %>%
+addMarkers(~long, ~lat, icon = Icon, popup = ~content, label = ~as.character(VioCount),
+           options = popupOptions(closeButton = FALSE))
+# %>% addProviderTiles(providers$Stamen.Toner)
+# %>% addProviderTiles(providers$CartoDB.Positron)
+# %>% addProviderTiles(providers$Esri.NatGeoWorldMap)
+```
+
+```{r, warning = FALSE}
+boston_map <- make_bbox(lat = lat, lon = long, data = food.50)
+boston_map <- get_map(location = boston_map, source = "google", maptype = "hybrid")
+ggmap(boston_map) +
+geom_point(data = food.50, mapping = aes(x = long, y = lat, size = VioCount, color = "red")) +
+guides(color = FALSE) +  
+  geom_label_repel(
+  aes(x = long, y = lat, label = businessName),
+  data = food.50,
+  family = "Times",
+  size = 2,
+  box.padding = 0.08, point.padding = 0.1,
+  segment.color = "grey50")
+```
+
+## First 500 rows of Food Courts in MA with Violations in 2018
+```{r, warning = FALSE}
+# content <- paste(sep = "<br/>",
+# foodcourt_2018$businessName,
+# foodcourt_2018$Address)
+
+boston.500 <- foodcourt_2018[1:500, ]
+
+getColor <- function(foodcourt_2018) {
+  sapply(foodcourt_2018$count, function(count) {
+    if (count >= 10 & count < 20) {
+      "orange"
+    } else if (count < 10 & count >= 1) {
+      "green"
+    } else if (count >= 20 & count < 100) {
+      "purple"
+    } else if (count >= 100 & count < 234) {
+      "red"
+    }
+  })
+}
+
+icons <- awesomeIcons(
+  icon = "coffee",
+  iconColor = "white",
+  library = "ion",
+  markerColor = getColor(boston.500)
+)
+
+# Show first 500 rows from the foodcourt_2018 dataset
+leaflet(boston.500) %>%
+  addTiles() %>%
+  addAwesomeMarkers(~long, ~lat, icon = icons, popup = ~as.character(businessName), options = popupOptions(closeButton = FALSE), label = ~as.character(count)) %>%
+  addLegend("bottomright", colors = c("green", "orange", "purple", "red"), labels = c("<10", "10~20", "20~100", ">100"), title = "Violation Counts", opacity = 1) %>%
+  addMeasure(
+    position = "bottomleft",
+    primaryLengthUnit = "meters",
+    primaryAreaUnit = "sqmeters",
+    activeColor = "#3D535D",
+    completedColor = "#7D4479") %>%
+  addLayersControl(
+    overlayGroups = (foodcourt_2018$ViolLevel),
+    options = layersControlOptions(collapsed = FALSE))
+# %>% addProviderTiles(providers$Stamen.Toner)
+# %>% addProviderTiles(providers$CartoDB.Positron)
+# %>% addProviderTiles(providers$Esri.NatGeoWorldMap)
+```
+
+```{r, warning = FALSE}
+boston_map <- make_bbox(lat = lat, lon = long, data = foodcourt_2018)
+boston_map <- get_map(location = boston_map)
+severe <- filter(foodcourt_2018, count > 80)
+
+ggmap(boston_map) + 
+  geom_point(data = severe, mapping = aes(x = long, y = lat, color = count), size = 3) +
+  scale_colour_gradient(low = "yellow", high = "red") + 
+  geom_label_repel(
+    aes(x = long, y = lat, label = businessName),
+    data = severe,
+    family = "Times",
+    size = 2,
+    box.padding = 0.08,
+    point.padding = 0.1,
+    segment.color = "grey50") + 
+  ggtitle("Violation counts over 80")
+```
