@@ -7,7 +7,7 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-pacman::p_load("leaflet","sp","magrittr","maps","htmltools","rgdal","ggplot2","maptools","XML","readr","rgeos","rmapshaper","tidyverse","lubridate","ggmap",update = FALSE)
+pacman::p_load("leaflet","sp","magrittr","maps","htmltools","rgdal","ggplot2","maptools","XML","readr","rgeos","rmapshaper","tidyverse","lubridate","ggmap","ggrepel","dplyr",update = FALSE)
 ```
 
 ```{r}
@@ -16,7 +16,7 @@ mayorsfoodcourt <- read_csv("mayorsfoodcourt.csv")
 
 # Data cleaning
 mayorsfoodcourt$VioYear <- lubridate::year(mayorsfoodcourt$VIOLDTTM)
-mayorsfoodcourt %>% filter(LICSTATUS == "Active") %>% select(businessName,LICSTATUS,ViolLevel,VIOLDTTM,Address,CITY,ZIP,Location) %>% separate(Location, c("lat","lng"),",")-> foodcourt
+mayorsfoodcourt %>% filter(LICSTATUS == "Active") %>% dplyr::select(businessName,LICSTATUS,ViolLevel,VIOLDTTM,Address,CITY,ZIP,Location) %>% separate(Location, c("lat","lng"),",")-> foodcourt
 foodcourt$lat <- as.numeric(gsub("\\(", "", foodcourt$lat))
 foodcourt$lng <- as.numeric(gsub(")", "", foodcourt$lng))
 
@@ -28,7 +28,7 @@ foodcourt %>% group_by(businessName,Address) %>% count() %>% arrange(desc(n))  -
 colnames(food)[3] <- "VioCount"
 
 # Separate the longitude and latitude
-foodcourt %>% select(businessName,LICSTATUS,Address,CITY,ZIP,lat,lng) -> location
+foodcourt %>% dplyr::select(businessName,LICSTATUS,Address,CITY,ZIP,lat,lng) -> location
 location <- unique(location)
 
 # How many NAs in location
