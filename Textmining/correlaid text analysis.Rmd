@@ -29,6 +29,14 @@ pacman::p_load(
 
 
 ##Scraping webpages
+
+We see here we scrap three articles from correlaid.com and combine them into aone data frame.
+
+These three articles are :  
+* understand-p-values;
+* blockchain-explained;
+* music-with-r.
+
 ```{r, echo=FALSE}
 url1 <- "https://correlaid.org/blog/posts/understand-p-values"
 url2 <- "https://correlaid.org/blog/posts/blockchain-explained"
@@ -47,10 +55,13 @@ raw.text <- as.data.frame(rbind(cbind("doc1",doc1),
 colnames(raw.text)  <-  c("article", "text")  
 raw.text$article <- as.character(raw.text$article)
 raw.text$text <- as.character(raw.text$text)
-#str(raw.text)
+str(raw.text)
 ```
 
 ##tidy text
+
+We tidy the text by `unnest_tokens` function and filter the useful words, which make sense.
+
 ```{r, echo=FALSE}
 tidy_webtext <- raw.text %>%
   # unnest_tokens(sentence, text, token = "sentences") %>% 
@@ -60,11 +71,13 @@ tidy_webtext <- raw.text %>%
   filter(!word %in% "[\\s]+",
          !word %in% "",
          !word %in% NA)
+head(tidy_webtext)
 ```
 
 
 ##look at single word frequency and visualize
-###first at doc1
+###Here look at the first article **p-value** and cont word frequencies.
+
 ```{r, echo=FALSE}
 text1_count <- tidy_webtext %>%
   filter(article == "doc1" )%>%
@@ -79,7 +92,10 @@ text1_count %>%
   coord_flip() 
 ```
 
-###plotting and comparing the three articles
+Then calculate word frequencies of three articles .
+
+Plotting and comparing the three articles
+
 ```{r,warning=FALSE, message=FALSE, echo=FALSE}
 frequency <- tidy_webtext %>% 
   count(article, word) %>%
@@ -216,7 +232,7 @@ sentitext %>%
                    max.words = 100)
 ```
 
-#Chapter 3 tf-idf
+#tf-idf
 
 ```{r,warning=FALSE, message=FALSE, echo=FALSE}
 wordcount <- tidy_webtext %>%
@@ -292,7 +308,7 @@ tidytext %>%
   coord_flip()
 ```
 
-#Chapter 4 n-grams and correlations
+#n-grams and correlations
 
 We use `unnest_tokens` function to tokenize the articles into consecutive sequences of words, called n-grams. Here we focus on bigrams, aka two consecutive words.
 
@@ -482,3 +498,61 @@ word_cors %>%
   geom_node_text(aes(label = name), repel = TRUE) +
   theme_void()
 ```
+
+```{r}
+library(topicmodels)
+
+text_dtm <- sentitext %>%
+  count(article, word, sort = TRUE)%>%
+  ungroup()%>%
+  cast_dtm(article, word, n)
+
+text_dtm
+
+text_lda <- LDA(text_dtm,k =7, control = list(seed = 1234))
+text_lda
+
+tidy_lda <- tidy(text_lda)
+tidy_lda
+
+
+top_terms <- tidy_lda %>%
+  group_by(topic) %>%
+  top_n(3, beta) %>%
+  ungroup() %>%
+  arrange(topic, -beta)
+top_terms
+
+top_terms %>%
+  mutate(term = reorder(term, beta)) %>%
+  group_by(topic, term) %>%    
+  arrange(desc(beta)) %>%  
+  ungroup() %>%
+  mutate(term = factor(paste(term, topic, sep = "__"), 
+                       levels = rev(paste(term, topic, sep = "__")))) %>%
+  ggplot(aes(term, beta, fill = as.factor(topic))) +
+  geom_col(show.legend = FALSE) +
+  coord_flip() +
+  scale_x_discrete(labels = function(x) gsub("__.+$", "", x)) +
+  labs(title = "Top 3 terms in each LDA topic",
+       x = NULL, y = expression(beta)) +
+  facet_wrap(~ topic, ncol = 4, scales = "free")
+
+lda_gamma <- tidy(text_lda, matrix = "gamma")
+lda_gamma
+ggplot(lda_gamma, aes(gamma)) +
+  geom_histogram() +
+  #scale_y_log10() +
+  labs(title = "Distribution of probabilities for all topics",
+       y = "Number of documents", x = expression(gamma))
+
+ggplot(lda_gamma, aes(gamma, fill = as.factor(topic))) +
+  geom_histogram(show.legend = FALSE) +
+  facet_wrap(~ topic, ncol = 4) +
+  scale_y_log10() +
+  labs(title = "Distribution of probability for each topic",
+       y = "Number of documents", x = expression(gamma))
+```
+
+##Summary
+By using a combination of network analysis, tf-idf, and topic modeling, we have come to a greater understanding of how datasets are related in these three articles from correlaid website. Specifically, we have more information now about how keywords are connected to each other and which datasets are likely to be related. The topic model could be used to suggest keywords based on the words in the description field, or the work on the keywords could suggest the most important combination of keywords for certain areas of study.
