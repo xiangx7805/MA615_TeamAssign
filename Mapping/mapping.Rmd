@@ -64,7 +64,7 @@ icons <- awesomeIcons(
   markerColor = getColor(boston.500)
 )
 
-# Show first 200 rows from the boston_food dataset
+# Show first 500 rows from the boston_food dataset
 leaflet(boston.500) %>% addTiles() %>% addAwesomeMarkers(~long, ~lat, icon=icons, popup = ~content,  options = popupOptions(closeButton = FALSE), label = ~as.character(ViolStatus))%>%  addLegend("bottomright",colors=c("green","purple"),labels = c("Pass","Fail"),title = "Violstatus", opacity = 1)
 
 #%>% addProviderTiles(providers$Esri.NatGeoWorldMap)
@@ -75,7 +75,7 @@ leaflet(boston.500) %>% addTiles() %>% addAwesomeMarkers(~long, ~lat, icon=icons
 boston_map<- make_bbox(lat = lat, lon = long, data = boston_food)
 boston_map <- get_map(location = boston_map, source = "google", maptype = "hybrid")
 ggmap(boston_map) + 
-  geom_point(data = boston_food, mapping = aes(x = long, y = lat, color= ViolStatus))
+  geom_point(data = boston_food[1:500,], mapping = aes(x = long, y = lat, color= ViolStatus))
 ```
 
 
