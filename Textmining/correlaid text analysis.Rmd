@@ -471,7 +471,7 @@ word_cors %>%
 
 Visualize the correlations and clusters of words.
 
-```{r,warning=FALSE, message=FALSE, echo=FALSE, fig.width=4, fig.height=4}
+```{r,warning=FALSE, message=FALSE, echo=FALSE, fig.width=6, fig.height=6}
 set.seed(2016)
 word_cors %>%
   filter(correlation > 0) %>%
