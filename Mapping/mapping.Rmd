@@ -3,6 +3,8 @@ title: "boston_foodmapping"
 author: "Ningze Zu"
 date: "11/3/2018"
 output:
+  html_document:
+    df_print: paged
   pdf_document:
     df_print: paged
 ---
@@ -41,26 +43,31 @@ boston_food$long <- as.numeric(gsub(")", "", boston_food$long))
 
 ```{r}
 #leaflet 
-data(boston_food)
+
+content <- paste(sep = "<br/>",
+                 boston_food$businessName,
+                 boston_food$Address)
+
 boston.500 <- boston_food[1:500,]
 getColor <- function(boston_food) {
   sapply(boston_food$ViolStatus, function(ViolStatus) {
   if(ViolStatus == "Pass") {
-    "green"
+    "purple"
   } else if(ViolStatus == "Fail"){
-    "red"
+    "green"
   } })
 }
 icons <- awesomeIcons(
-  icon = 'ios-close',
-  iconColor = 'black',
+  icon = "coffee",
+  iconColor = 'white',
   library = 'ion',
   markerColor = getColor(boston.500)
 )
 
 # Show first 200 rows from the boston_food dataset
-leaflet(boston.500) %>% addTiles() %>% addAwesomeMarkers(~long, ~lat, icon=icons, popup = ~as.character(businessName), label = ~as.character(ViolStatus)) %>% addProviderTiles(providers$Esri.NatGeoWorldMap)  %>%  addLegend("bottomright",colors=c("red","green"),labels = c("Fail","Pass"),title = "Violstatus", opacity = 1)
+leaflet(boston.500) %>% addTiles() %>% addAwesomeMarkers(~long, ~lat, icon=icons, popup = ~content,  options = popupOptions(closeButton = FALSE), label = ~as.character(ViolStatus))%>%  addLegend("bottomright",colors=c("green","purple"),labels = c("Pass","Fail"),title = "Violstatus", opacity = 1)
 
+#%>% addProviderTiles(providers$Esri.NatGeoWorldMap)
 ```
 
 
