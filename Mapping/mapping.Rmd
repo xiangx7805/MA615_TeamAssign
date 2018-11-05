@@ -19,7 +19,6 @@ library(ggmap)
 library(rgdal)
 library(devtools)
 library(maptools)
-library(plyr)
 library(raster)
 library(leaflet)
 library(sp)
@@ -33,7 +32,6 @@ library(ggrepel)
 #cleaning the data
 #filter food courts whose licsense status is active and VIOLDTTM in 2018.
 
-mayorsfoodcourt %>% select(businessName, Location, Address, CITY, ZIP, LICSTATUS, VIOLDTTM, ViolLevel, ViolDesc, RESULT)
 boston_food <- mayorsfoodcourt %>% filter(str_detect(VIOLDTTM, "2018")) %>% filter(LICSTATUS=="Active") %>% separate(Location, c("lat","long"),",") %>% filter(!is.na(long) & !is.na(lat))
 #covert location into latitude and longtitude. 
 boston_food$lat <- as.numeric(gsub("\\(", "", boston_food$lat))
@@ -45,6 +43,7 @@ View(boston_food)
 
 ```
 
+## Food courts in MA with violations in 2018
 ```{r}
 #leaflet 
 
