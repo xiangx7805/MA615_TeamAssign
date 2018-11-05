@@ -1,5 +1,5 @@
 ---
-title: "correlaid_text_analysis"
+title: "Correlaid_Text_Analysis"
 author: "Xiang XU, Jing(Mira) Tang, Ningze(Summer) ZU, Jianhao(Miller) Yan"
 date: "November 3, 2018"
 output: pdf_document
@@ -499,7 +499,7 @@ word_cors %>%
   theme_void()
 ```
 
-```{r}
+```{r,warning=FALSE, message=FALSE, echo=FALSE}
 library(topicmodels)
 
 text_dtm <- sentitext %>%
