@@ -25,6 +25,7 @@ library(leaflet)
 library(sp)
 library(magrittr)
 library(htmltools)
+library(ggrepel)
 ```
 
 
@@ -32,30 +33,40 @@ library(htmltools)
 #cleaning the data
 #filter food courts whose licsense status is active and VIOLDTTM in 2018.
 
-
+mayorsfoodcourt %>% select(businessName, Location, Address, CITY, ZIP, LICSTATUS, VIOLDTTM, ViolLevel, ViolDesc, RESULT)
 boston_food <- mayorsfoodcourt %>% filter(str_detect(VIOLDTTM, "2018")) %>% filter(LICSTATUS=="Active") %>% separate(Location, c("lat","long"),",") %>% filter(!is.na(long) & !is.na(lat))
 #covert location into latitude and longtitude. 
 boston_food$lat <- as.numeric(gsub("\\(", "", boston_food$lat))
 boston_food$long <- as.numeric(gsub(")", "", boston_food$long))
-#View(boston_food)
+count <- aggregate(data.frame(count = boston_food$businessName), list( value= boston_food$businessName), length)
+boston_food <- boston_food[!duplicated(boston_food$businessName), ]
+boston_food <- cbind(boston_food, count)
+View(boston_food)
 
 ```
 
 ```{r}
 #leaflet 
 
-content <- paste(sep = "<br/>",
-                 boston_food$businessName,
-                 boston_food$Address)
+#content <- paste(sep = "<br/>",
+                 #boston_food$businessName,
+                 #boston_food$Address)
+
+
 
 boston.500 <- boston_food[1:500,]
 getColor <- function(boston_food) {
-  sapply(boston_food$ViolStatus, function(ViolStatus) {
-  if(ViolStatus == "Pass") {
-    "purple"
-  } else if(ViolStatus == "Fail"){
+  sapply(boston_food$count, function(count) {
+  if(count >= 10 & count <20) {
+    "orange"
+  } else if(count < 10 & count >=1){
     "green"
-  } })
+  } else if( count >=20 & count <100){
+    "purple"
+  } else if( count >=100 & count <234){
+    "red"
+  } 
+    })
 }
 icons <- awesomeIcons(
   icon = "coffee",
@@ -64,8 +75,16 @@ icons <- awesomeIcons(
   markerColor = getColor(boston.500)
 )
 
-# Show first 200 rows from the boston_food dataset
-leaflet(boston.500) %>% addTiles() %>% addAwesomeMarkers(~long, ~lat, icon=icons, popup = ~content,  options = popupOptions(closeButton = FALSE), label = ~as.character(ViolStatus))%>%  addLegend("bottomright",colors=c("green","purple"),labels = c("Pass","Fail"),title = "Violstatus", opacity = 1)
+# Show first 500 rows from the boston_food dataset
+leaflet(boston.500) %>% addTiles() %>% addAwesomeMarkers(~long, ~lat, icon=icons, popup = ~as.character(businessName),  options = popupOptions(closeButton = FALSE), label = ~as.character(count))%>%  addLegend("bottomright",colors=c("green","orange","purple","red"),labels = c("<10","10~20","20~100",">100"),title = "Violation Counts", opacity = 1) %>%  
+  addMeasure(
+    position = "bottomleft",
+    primaryLengthUnit = "meters",
+    primaryAreaUnit = "sqmeters",
+    activeColor = "#3D535D",
+    completedColor = "#7D4479") %>% addLayersControl(
+    overlayGroups = (boston_food$ViolLevel),
+    options = layersControlOptions(collapsed = FALSE))
 
 #%>% addProviderTiles(providers$Esri.NatGeoWorldMap)
 ```
@@ -73,12 +92,15 @@ leaflet(boston.500) %>% addTiles() %>% addAwesomeMarkers(~long, ~lat, icon=icons
 
 ```{r}
 boston_map<- make_bbox(lat = lat, lon = long, data = boston_food)
-boston_map <- get_map(location = boston_map, source = "google", maptype = "hybrid")
-ggmap(boston_map) + 
-  geom_point(data = boston_food, mapping = aes(x = long, y = lat, color= ViolStatus))
+boston_map <- get_map(location = boston_map)
+severe <- filter(boston_food, count>80)
+ggmap(boston_map) + geom_point(data = severe, mapping = aes(x = long, y = lat, color=count), size=3) + scale_colour_gradient(low = "yellow", high = "red")+ geom_label_repel(
+    aes(x = long, y = lat, label = businessName),
+    data=severe,
+    family = 'Times', 
+    size = 2, 
+    box.padding = 0.08, point.padding = 0.1,
+    segment.color = 'grey50')  + ggtitle("Violation counts over 80")
 ```
-
-
-
 
 
