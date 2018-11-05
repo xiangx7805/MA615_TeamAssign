@@ -215,7 +215,7 @@ bing_counts %>%
 
 ##Wordclouds
 ```{r,warning=FALSE, message=FALSE, echo=FALSE}
-sentitext %>%
+tidy_webtext %>%
   count(word) %>%
   with(wordcloud(word, n, max.words = 100))
 ```
