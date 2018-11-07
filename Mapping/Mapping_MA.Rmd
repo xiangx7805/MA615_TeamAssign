@@ -1,11 +1,9 @@
 ---
-title: "foodcourt_2018mapping"
-author: "Team: Ningze Zu, Mira Tang, Xiang Xu "
+title: "Mapping Boston Restaurants"
+author: "Team: Ningze(Summer) ZU, Jing(Mira) Tang ,Xiang Xu "
 date: "11/3/2018"
 output:
-html_document:
-  df_print: paged
-pdf_document:
+  html_document:
   df_print: paged
 ---
 
@@ -65,14 +63,43 @@ colnames(food)[2] <- "Address"
 food <- na.omit(food)
 ```
 
-## Top 50 Food Courts in MA with the Most Violations
-
+## Top 10 Food Courts in MA with the Most Violations
 ```{r, warning = FALSE}
-food.50 <- food[1:50,]
+food.10 <- food[1:10,]
+content <- paste(sep = "<br/>",
+                 food.10$businessName,
+                 food.10$Address,
+                 food.10$CITY,
+                 food.10$VioCount
+)
+
+Icon <- makeIcon(
+  iconUrl = "https://image.flaticon.com/icons/svg/138/138310.svg",
+  iconWidth = 15, iconHeight = 15,
+  iconAnchorX = 22, iconAnchorY = 94,
+  shadowUrl = "https://image.flaticon.com/icons/svg/138/138310.svg",
+  shadowWidth = 15, shadowHeight = 15,
+  shadowAnchorX = 4, shadowAnchorY = 62
+)
+
+leaflet(data = food.10) %>%
+addTiles() %>%
+  addPopups(~long, ~lat, ~ content,
+            options = popupOptions(closeButton = FALSE))%>%
+  addMarkers(~long, ~lat, icon = Icon, popup = ~content, label = ~as.character(VioCount))
+# %>% addProviderTiles(providers$Stamen.Toner)
+# %>% addProviderTiles(providers$CartoDB.Positron)
+# %>% addProviderTiles(providers$Esri.NatGeoWorldMap)
+```
+
+## Top 50 Food Courts in MA with the Most Violations
+```{r, warning = FALSE}
+food.50 <- food[1:10,]
 content <- paste(sep = "<br/>",
                  food.50$businessName,
                  food.50$Address,
-                 food.50$CITY
+                 food.50$CITY,
+                 food.50$VioCount
 )
 
 Icon <- makeIcon(
@@ -86,13 +113,11 @@ Icon <- makeIcon(
 
 leaflet(data = food.50) %>%
 addTiles() %>%
-addMarkers(~long, ~lat, icon = Icon, popup = ~content, label = ~as.character(VioCount),
-           options = popupOptions(closeButton = FALSE))
-# %>% addProviderTiles(providers$Stamen.Toner)
+  addMarkers(~long, ~lat, icon = Icon, popup = ~content, label = ~as.character(VioCount)) %>%
+  addProviderTiles(providers$Stamen.Toner)
 # %>% addProviderTiles(providers$CartoDB.Positron)
 # %>% addProviderTiles(providers$Esri.NatGeoWorldMap)
 ```
-
 
 \dontrun{
 boston_map <- make_bbox(lat = lat, lon = long, data = food.50)
@@ -151,10 +176,10 @@ leaflet(boston.500) %>%
     completedColor = "#7D4479") %>%
   addLayersControl(
     overlayGroups = (foodcourt_2018$ViolLevel),
-    options = layersControlOptions(collapsed = FALSE))
+    options = layersControlOptions(collapsed = FALSE)) %>% 
+  addProviderTiles(providers$Esri.NatGeoWorldMap)
 # %>% addProviderTiles(providers$Stamen.Toner)
 # %>% addProviderTiles(providers$CartoDB.Positron)
-# %>% addProviderTiles(providers$Esri.NatGeoWorldMap)
 ```
 
 
