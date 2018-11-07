@@ -1,6 +1,6 @@
 ---
 title: "Mapping Boston Restaurants"
-author: "Team: Ningze(Summer) ZU, Jing(Mira) Tang ,Xiang Xu Jianhao Yan "
+author: "Team: Ningze(Summer) ZU, Jing(Mira) Tang ,Xiang Xu, Jianhao Yan "
 date: "11/3/2018"
 output:
   html_document:
