@@ -94,7 +94,7 @@ addTiles() %>%
 
 ## Top 50 Food Courts in MA with the Most Violations
 ```{r, warning = FALSE}
-food.50 <- food[1:10,]
+food.50 <- food[1:50,]
 content <- paste(sep = "<br/>",
                  food.50$businessName,
                  food.50$Address,
@@ -119,7 +119,9 @@ addTiles() %>%
 # %>% addProviderTiles(providers$Esri.NatGeoWorldMap)
 ```
 
+
 \dontrun{
+# We can't use google api
 boston_map <- make_bbox(lat = lat, lon = long, data = food.50)
 boston_map <- get_map(location = boston_map, source = "google", maptype = "hybrid")
 ggmap(boston_map) +
