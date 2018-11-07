@@ -50,6 +50,7 @@ location <- unique(location)
 # how many NAs
 sum(is.na(location$lat))
 as.numeric(sum(is.na(location$lat)) / count(unique(location))) # location
+print("There are 34% location in our data are missing.")
 
 # create a dataset with count of violation times and the geographic info of foodcourts
 food$ID <- paste(food$businessName, food$Address)
@@ -92,7 +93,8 @@ addMarkers(~long, ~lat, icon = Icon, popup = ~content, label = ~as.character(Vio
 # %>% addProviderTiles(providers$Esri.NatGeoWorldMap)
 ```
 
-```{r, warning = FALSE}
+
+\dontrun{
 boston_map <- make_bbox(lat = lat, lon = long, data = food.50)
 boston_map <- get_map(location = boston_map, source = "google", maptype = "hybrid")
 ggmap(boston_map) +
@@ -105,7 +107,7 @@ guides(color = FALSE) +
   size = 2,
   box.padding = 0.08, point.padding = 0.1,
   segment.color = "grey50")
-```
+}
 
 ## First 500 rows of Food Courts in MA with Violations in 2018
 ```{r, warning = FALSE}
@@ -155,7 +157,8 @@ leaflet(boston.500) %>%
 # %>% addProviderTiles(providers$Esri.NatGeoWorldMap)
 ```
 
-```{r, warning = FALSE}
+
+\dontrun{
 boston_map <- make_bbox(lat = lat, lon = long, data = foodcourt_2018)
 boston_map <- get_map(location = boston_map)
 severe <- filter(foodcourt_2018, count > 80)
@@ -172,4 +175,4 @@ ggmap(boston_map) +
     point.padding = 0.1,
     segment.color = "grey50") + 
   ggtitle("Violation counts over 80")
-```
+}
