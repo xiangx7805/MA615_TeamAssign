@@ -207,7 +207,12 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(top = 100, right = 100,
                  selectInput("var","Select Political Party",
-                             choices=c("Democrats","Republican","Independent"))
+                             choices=c("Democrats","Republican","Independent")),
+                 h4("A Work by:"),
+                 h4("Jianhao(Miller) Yan"),
+                 h4("Xiang(Rachel) XU"),
+                 h4("Jing(Mira) Tang"),
+                 h4("Ningze(Summer) ZU")
     ),
     mainPanel(
       plotlyOutput("mapping")
