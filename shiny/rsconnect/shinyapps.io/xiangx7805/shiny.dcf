@@ -1,0 +1,13 @@
+name: shiny
+title: shiny
+username:
+account: xiangx7805
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 565405
+bundleId: 1695850
+url: https://xiangx7805.shinyapps.io/shiny/
+when: 1542023231.59149
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: maps_in_shiny.Rmd|maps_in_shiny_miller.Rmd|map_shiny/rsconnect/shinyapps.io/xiangx7805/MA615_Teamassign_shinymaps.dcf
