@@ -1,6 +1,6 @@
 ---
 title: "TeamAssign_Officer"
-author: "Xiang XU"
+author: "Xiang XU, Jing Tang, Ningze ZU, Jianhao Yan"
 date: "November 16, 2018"
 output: pdf_document
 ---
@@ -34,8 +34,7 @@ temp %<>%
   ph_empty(type='ctrTitle') %>%
   #ph_with_text(type = "ctrTitle", str = "Advantages of a Bear Market")%>%
   ph_add_fpar(fpar(ftext("Advantages of a Bear Market", prop=fs1)), type = 'ctrTitle') %>%
-  ph_with_text(type = "subTitle", index = 1, str= "Xiang XU, TangJing, Ningze ZU,Jianhao Yan") %>%
-  ph_with_text(type = "dt", str= format(Sys.Date()))
+  ph_with_text(type = "subTitle", index = 1, str= "Xiang XU, TangJing, Ningze ZU,Jianhao Yan")
 ```
 
 
@@ -49,20 +48,15 @@ layout_properties(temp, layout = "Two Content" ,master = master)
 temp%<>%
   add_slide(layout= "Two Content", master = master) %>%
   ph_with_text(type= "title", str= "Investing in Stocks")%>%
-  ph_with_text(type = "body", index = 4, str ="1. Represents ownership in a firm 
-2. Earn a return in two ways
-  - Price of the stock rises over time
-  - Dividends are paid to the stockholder
-3. Stockholders have claim on all assets" ) %>%
-  ph_with_text(type = "body", index= 3, str = "4. Right to vote for directors and on certain issues
-5. Two types
-  - Common stock
-       Right to vote
-       Receive dividends
-  - Preferred stock
-       Receive a fixed dividend
-       Do not usually vote")%>%
-  ph_with_text(type = "sldNum", str = "Slide 01")
+  ph_with_ul(type = "body", index = 4, str =c("1. Represents ownership in a firm ",
+"2. Earn a return in two ways",
+"Price of the stock rises over time",
+"Dividends are paid to the stockholder",
+"3. Stockholders have claim on all assets" ) ,
+level_list = c(1,1,2,2,1))%>%
+  ph_with_ul(type = "body", index= 3, 
+               str_list = c("4. Right to vote for directors and on certain issues","5. Two types","Common stock","Right to vote","Receive dividends","Preferred stock","Receive a fixed dividend"," Do not usually vote"),
+               level_list=c(1,1,2,3,3,2,3,3))
 
 
 
@@ -81,8 +75,8 @@ temp %<>% add_slide(layout = "Half Image Vertical Purple", master = master)%>%
              height = 7.5,  width = 7.5 ) %>%
   ph_with_text(type = "title",   str= "Investing in Stocks" )%>%
   ph_with_text(type = "body" ,index=4, str=c("Sample Corporate Stock Certificate 
-  Figure 11.1  Wien Consolidated Airlines Stock") )%>%
-  ph_with_text(type = "sldNum", str = "Slide 02")
+  Figure 11.1  Wien Consolidated Airlines Stock") )#%>%
+  #ph_with_text(type= "sldNum", str= 3)
 
 ```
 
@@ -96,8 +90,8 @@ temp %<>% add_slide(layout = "Half Image Horizontal", master = master)%>%
   ph_with_img(type = "pic", src= "./image/Picture2.jpg", 
              height = 4.06, width = 13.3 ) %>%
   ph_with_text(type = "title" ,  str= "What is a Bear Market?" )%>%
-  ph_with_text(type = "body", index =1, str="A decline of 15-20% of the broad market coupled with pessimistic sentiment underlying the stock market." ) %>%
-  ph_with_text(type = "sldNum", str = "Slide 03")
+  ph_with_text(type = "body", index =1, str="A decline of 15-20% of the broad market coupled with pessimistic sentiment underlying the stock market." ) #%>%
+  #ph_with_text(type= "sldNum", str= 3)
 
 ```
 
@@ -110,8 +104,7 @@ layout_properties(temp, layout = "Half Image Vertical Purple", master = master)
 temp %<>% add_slide(layout = "Half Image Vertical Purple", master = master)%>%
   ph_with_img(type = "pic", src= "./image/Picture3.png", 
              height = 7.5, width = 7.5 ) %>%
-  ph_with_text(type = "title" ,  str= "Stock Market Indexes: the Dow Jones Industrial Average" )%>%
-  ph_with_text(type = "sldNum", str = "Slide 04")
+  ph_with_text(type = "title" ,  str= "Stock Market Indexes: the Dow Jones Industrial Average" )
 ```
 
 
@@ -130,8 +123,7 @@ layout_properties(temp, layout = "Content with Caption", master = master)
 temp %<>% 
   add_slide(layout = "Content with Caption", master = master)%>%
   ph_with_gg(type = "body", index= 1, value = p) %>%
-  ph_with_text(type="title", str ="Dow Jones ")%>%
-  ph_with_text(type = "sldNum", str = "Slide 05")
+  ph_with_text(type="title", str ="Dow Jones ")
   
 
 ```
@@ -142,10 +134,9 @@ layout_properties(temp, layout = "Title Only", master =  master)
 temp %<>%
   add_slide(layout = "Title Only", master =  master)%>%
   ph_with_text(type= "title", str = "The last Bear market")%>%
-  ph_with_text(type = "body", index =2, str= "Sept. 30, 2002  Dow  7528
-Jan. 5, 2004      Dow  10,568
-Oct. 8, 2007      Dow   14093")%>%
-  ph_with_text(type = "sldNum", str = "Slide 06")
+  ph_with_ul(type = "body", index =2, 
+             str_list=c( "Sept. 30, 2002  Dow  7,528", "Jan. 5, 2004   Dow  10,568","Oct. 8, 2007      Dow   14,093"), 
+             level_list = c(1,1,1))
 ```
 
 ##Word Content
@@ -154,11 +145,9 @@ layout_properties(temp, layout = "Title Only", master =  master)
 temp %<>%
   add_slide(layout = "Title Only", master =  master)%>%
   ph_with_text(type= "title", str = "What do I do in a Bear Market")%>%
-  ph_with_text(type = "body", index =2, str= "Decide whether this is a market correction or the start of something more
-Review the stocks you own
-Review stocks you wanted to own but were too expensive at time of research
-Check your portfolio for balance or the type of stocks you own")%>%
-  ph_with_text(type = "sldNum", str = "Slide 07")
+  ph_with_ul(type = "body", index =2, 
+             str_list= c("Decide whether this is a market correction or the start of something more","Review the stocks you own","Review stocks you wanted to own but were too expensive at time of research","Check your portfolio for balance or the type of stocks you own"),
+             level_list = c(1,1,1,1))
 ```
 
 ##output the slides
