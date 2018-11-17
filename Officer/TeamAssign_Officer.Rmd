@@ -1,6 +1,6 @@
 ---
 title: "TeamAssign_Officer"
-author: "Xiang XU, Jing Tang, Ningze ZU, Jianhao Yan"
+author: "Xiang XU, Jing TANG, Ningze ZU, Jianhao Yan"
 date: "November 16, 2018"
 output: pdf_document
 ---
@@ -34,7 +34,7 @@ temp %<>%
   ph_empty(type='ctrTitle') %>%
   #ph_with_text(type = "ctrTitle", str = "Advantages of a Bear Market")%>%
   ph_add_fpar(fpar(ftext("Advantages of a Bear Market", prop=fs1)), type = 'ctrTitle') %>%
-  ph_with_text(type = "subTitle", index = 1, str= "Xiang XU, TangJing, Ningze ZU,Jianhao Yan")
+  ph_with_text(type = "subTitle", index = 1, str= "Xiang XU, Jing TANG, Ningze ZU,Jianhao Yan")
 ```
 
 
