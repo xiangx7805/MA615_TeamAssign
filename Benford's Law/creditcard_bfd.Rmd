@@ -1,0 +1,41 @@
+---
+title: "Benford's law analysis about Credit Card Fraud"
+author: "Xiang XU, Si cHEN, Guangyan YU, Xuan ZHU"
+date: "November 26, 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+pacman::p_load("knitr","tidyverse","dplyr","benford.analysis","BenfordTests","magrittr")
+```
+
+```{r,warning=FALSE, message=FALSE}
+#read data
+creditcard <- read_csv("E:/MSSP/MA615/Content/Class32 Benford's Law/creditcard.csv")
+#str(creditcard)
+bfd.credit <- benford(creditcard$Amount)
+bfd.credit
+plot(bfd.credit)
+
+#creates a data frame with the duplicates in decreasing order.
+duplicatesTable(bfd.credit)
+
+#gets the Chi-squared test
+chisq(bfd.credit)
+chisq.benftest(creditcard$Amount)
+
+#gets the Distortion Factor of a Benford object.
+dfactor(bfd.credit)
+
+suspects <- getSuspects(bfd.credit, creditcard)
+kable(head(suspects[,c(1:4,28:31)]))
+
+#kmeans cluster
+credit_cluster <- kmeans(creditcard$Amount, 10, 10000)
+creditcard %<>% mutate(clust = as.factor(credit_cluster$cluster))
+
+ggplot(creditcard) +   aes(x= Time, y= Amount, color = clust ) + geom_point()
+```
+
+**From chisq result, the p-value is so small so we have to reject the null hypothesis. So we can know tour credit card data does not follow benford's law. And among about 285 thousands observations, we have 35 thousands suspects, aka means there are about 35 thousands potential credit card fraud.**
